@@ -55,7 +55,7 @@ router.get('/books/:bookId/edit', (req, res, next) => {
     Book.findById(bookId)
         .then(bookToEdit => {
             // console.log(bookToEdit);
-            res.render('books/book-edit.hbs', { book: bookToEdit }); // <-- add this line
+            res.render('books/book-edit.hbs', { book: bookToEdit });
         })
         .catch(error => next(error));
 });
@@ -67,7 +67,7 @@ router.post('/books/:bookId/edit', (req, res, next) => {
     const { title, description, author, rating } = req.body;
 
     Book.findByIdAndUpdate(bookId, { title, description, author, rating }, { new: true })
-        .then(updatedBook => res.redirect(`/books/${updatedBook.id}`)) // go to the details page to see the updates
+        .then(updatedBook => res.redirect(`/books/${updatedBook.id}`))
         .catch(error => next(error));
 });
 
