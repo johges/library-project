@@ -26,11 +26,20 @@ router.get("/books", (req, res, next) => {
         });
 })
 
-// GET /book/create (display form)
+// CREATE: display form
 router.get("/books/create", (req, res, next) => {
-    // res.send("display form ....")
-    res.render("books/book-create")
-})
+    Author.find()
+        .then( authorsFromDB => {
+            const data = {
+                authors: authorsFromDB
+            }
+            res.render("books/book-create", data);
+        })
+        .catch((e) => {
+            console.log("Error getting list of authors from DB", e);
+            next(e);
+        });
+});
 
 // POST /books/create (process form)
 router.post("/books/create", (req, res, next) => {
@@ -39,7 +48,8 @@ router.post("/books/create", (req, res, next) => {
         description: req.body.description,
         author: req.body.author,
         rating: req.body.rating
-    }
+    };
+
     Book.create(newBook)
         .then((newBook) => {
             res.redirect("/books")
