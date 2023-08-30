@@ -68,6 +68,7 @@ router.get("/login", (req, res, next) => {
     res.render("auth/login");
 });
 
+
 //POST /login
 router.post('/login', (req, res, next) => {
     const { email, password } = req.body;
@@ -80,14 +81,17 @@ router.post('/login', (req, res, next) => {
     User.findOne({ email: email })
         .then(user => {
             if (!user) {
-                // user doesn't exist (no user with this email address)
+                //user doesn't exist (no user with this email address)
                 res.status(400).render('auth/login', { errorMessage: 'Email is not registered. Try with other email.' });
                 return;
             } else if (bcryptjs.compareSync(password, user.passwordHash)) {
-                // login successful
-                res.render('auth/user-profile', { user: user });
+                //login successful
+
+                req.session.userDetails = user;
+
+                res.redirect("/user-profile");
             } else {
-                // login failed
+                //login failed
                 res.status(400).render('auth/login', { errorMessage: 'Incorrect password.' });
             }
         })
@@ -100,7 +104,12 @@ router.post('/login', (req, res, next) => {
 
 
 router.get("/user-profile", (req, res, next) => {
-    res.render('auth/user-profile')
+
+    const data = {
+        userDetails: req.session.userDetails
+    }
+
+    res.render('auth/user-profile', data)
 })
 
 module.exports = router;
