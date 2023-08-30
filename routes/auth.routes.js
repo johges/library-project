@@ -18,13 +18,13 @@ router.get("/signup", (req, res, next) => {
 // POST /signup (process form)
 router.post("/signup", (req, res, next) => {
 
-    const { email, password } = req.body;
+    const {email, password} = req.body;
 
     // validation: required fields
     if (!email || !password) {
         res.status(400).render('auth/signup', { errorMessage: 'All fields are mandatory. Please provide your username, email and password.' });
         return;
-    }   
+    }
 
     // validation: pw strength
     const regex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
@@ -33,9 +33,10 @@ router.post("/signup", (req, res, next) => {
         return;
     }
 
+
     bcryptjs.genSalt(saltRounds)
-        .then(salt => bcryptjs.hash(password, salt))
-        .then(hash => {
+        .then( salt => bcryptjs.hash(password, salt))
+        .then( hash => {
             const newUser = {
                 email: email,
                 passwordHash: hash
@@ -43,9 +44,9 @@ router.post("/signup", (req, res, next) => {
 
             return User.create(newUser);
         })
-        .then(userFromDB => {
-            //account created successfully
-            res.redirect("/user-profile")
+        .then( userFromDB => {
+            //account created succcessfully
+            res.redirect("/user-profile");
         })
         .catch( error => {
             console.log("error creating user account... ", error);
@@ -57,10 +58,49 @@ router.post("/signup", (req, res, next) => {
                 next(error);
             }
         })
-})
+
+});
+
+
+
+//GET /login
+router.get("/login", (req, res, next) => {
+    res.render("auth/login");
+});
+
+//POST /login
+router.post('/login', (req, res, next) => {
+    const { email, password } = req.body;
+
+    if (email === '' || password === '') {
+        res.status(400).render('auth/login', { errorMessage: 'Please enter both, email and password to login.' });
+        return;
+    }
+
+    User.findOne({ email: email })
+        .then(user => {
+            if (!user) {
+                // user doesn't exist (no user with this email address)
+                res.status(400).render('auth/login', { errorMessage: 'Email is not registered. Try with other email.' });
+                return;
+            } else if (bcryptjs.compareSync(password, user.passwordHash)) {
+                // login successful
+                res.render('auth/user-profile', { user: user });
+            } else {
+                // login failed
+                res.status(400).render('auth/login', { errorMessage: 'Incorrect password.' });
+            }
+        })
+        .catch(error => {
+            console.log("error trying to login...", error);
+            next(error);
+        });
+});
+
+
 
 router.get("/user-profile", (req, res, next) => {
-    res.render("auth/user-profile");
+    res.render('auth/user-profile')
 })
 
 module.exports = router;
